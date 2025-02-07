@@ -22,6 +22,7 @@ export async function POST(req: Request) {
   const createdMessage = await openai.beta.threads.messages.create(threadId, {
     role: 'user',
     content: input.message,
+    
   });
 
   return AssistantResponse(

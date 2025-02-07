@@ -8,10 +8,20 @@ import { BotAvatar } from "@/components/bot-avatar";
 import { Empty } from "@/components/empty";
 import Heading from "@/components/heading";
 import { BotIcon } from "lucide-react";
+import { useEffect, useRef } from "react";
+import Markdown from 'react-markdown'
 
 const Conversation = () => {
   const { status, messages, input, submitMessage, handleInputChange } =
     useAssistant({ api: "/api/assistant" });
+
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
 
   return (
     <div className="flex flex-col min-h-screen border rounded-xl pb-1 shadow-md bg-white">
@@ -22,9 +32,9 @@ const Conversation = () => {
         iconColor="text-sky-500"
         bgColor="bg-sky-500/10"
       />
-      <div className="flex-1 px-4 lg:px-8 overflow-auto">
+      <div className="flex-1 px-4 lg:px-8 overflow-hidden">
         <div className="space-y-4 mt-4">
-          <div className="flex flex-col gap-y-4">
+          <div className="flex flex-col gap-y-4 overflow-y-auto max-h-[70vh]">
             {messages.map((m: Message) => (
               <div
                 key={m.id}
@@ -36,17 +46,19 @@ const Conversation = () => {
                 )}
               >
                 {m.role === "user" ? <UserAvatar /> : <BotAvatar />}
-                <p className="text-sm whitespace-pre-wrap">
+                <Markdown className="flex flex-col gap-y-3">
                   {m.role !== "data" && m.content}
-                </p>
+                </Markdown>
               </div>
             ))}
+            {/* Scroll target */}
+            <div ref={messagesEndRef} />
           </div>
 
           {messages.length === 0 && <Empty label="Chat With Assistant" />}
         </div>
       </div>
-      <div id="Message" className="flex items-center px-4 lg:px-8">
+      <div className="flex items-center px-4 lg:px-8">
         <form
           onSubmit={submitMessage}
           className="
@@ -67,7 +79,7 @@ const Conversation = () => {
             value={input}
             placeholder="What is the temperature in the living room?"
             onChange={handleInputChange}
-            className="col-span-12 lg:col-span-10"
+            className="col-span-12 lg:col-span-10 p-2 rounded-xl border-gray-300 border-2"
           />
           <Button
             className="col-span-12 lg:col-span-2 w-full bg-sky-500"
@@ -82,43 +94,3 @@ const Conversation = () => {
 };
 
 export default Conversation;
-
-// 'use client';
-
-// import { Message, useAssistant } from 'ai/react';
-
-// export default function Chat() {
-//   const { status, messages, input, submitMessage, handleInputChange } =
-//     useAssistant({ api: '/api/assistant' });
-
-//   return (
-//     <div>
-//       {messages.map((m: Message) => (
-//         <div key={m.id}>
-//           <strong>{`${m.role}: `}</strong>
-// {m.role !== 'data' && m.content}
-// {m.role === 'data' && (
-//   <>
-//     {(m.data as any).description}
-//     <br />
-//     <pre className={'bg-gray-200'}>
-//       {JSON.stringify(m.data, null, 2)}
-//     </pre>
-//             </>
-//           )}
-//         </div>
-//       ))}
-
-//       {status === 'in_progress' && <div />}
-
-//       <form onSubmit={submitMessage}>
-//         <input
-//           disabled={status !== 'awaiting_message'}
-//           value={input}
-//           placeholder="What is the temperature in the living room?"
-//           onChange={handleInputChange}
-//         />
-//       </form>
-//     </div>
-//   );
-// }
